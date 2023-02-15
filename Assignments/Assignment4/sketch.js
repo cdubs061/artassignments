@@ -1,11 +1,7 @@
 let roachSheet;
 let antSheet;
 
-let walkingAnimation;
-let walkingAnimation2;
-let chronoAnimation;
-
-let spriteSheetFilenames = ["roach.png", "Ant.png"];
+let spriteSheetFilenames = ["roach.png", "ant.png"];
 let spriteSheets = [];
 let animations = [];
 
@@ -15,7 +11,7 @@ const GameState = {
   GameOver: "GameOver"
 };
 
-let game = { score: 0, maxScore: 0, maxTime: 10, elapsedTime: 0, totalSprites: 15, state: GameState.Start, targetSprite: 2 };
+let game = { score: 0, maxScore: 0, maxTime: 30, elapsedTime: 0, totalSprites: 15, state: GameState.Start, targetSprite: 1 };
 
 function preload() {
   for(let i=0; i < spriteSheetFilenames.length; i++) {
@@ -24,7 +20,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(400, 400);
   imageMode(CENTER);
   angleMode(DEGREES);
 
@@ -38,7 +34,7 @@ function reset() {
 
   animations = [];
   for(let i=0; i < game.totalSprites; i++) {
-    animations[i] = new WalkingAnimation(random(spriteSheets),80,80,random(100,300),random(100,300),9,random(0.5,1),6,random([0,1]));
+    animations[i] = new WalkingAnimation(random(spriteSheets),64,64,random(100,300),random(100,300),3,random(0.5,1),9,random([0,1]));
   }
 }
 
@@ -105,26 +101,28 @@ function mousePressed() {
         if (contains) {
           if (animations[i].moving != 0) {
             animations[i].stop();
+            for (let i=0; i < animations.length; i++){
+              animations[i].speed += 0.5;
+            }
             if (animations[i].spritesheet === spriteSheets[game.targetSprite])
               game.score += 1;
             else
               game.score -= 1;
           }
-          else {
-            if (animations[i].xDirection === 1)
-              animations[i].moveRight();
-            else
-              animations[i].moveLeft();
-          }
+          // else {
+          //   if (animations[i].xDirection === 1)
+          //     animations[i].moveRight();
+          //   else
+          //     animations[i].moveLeft();
+          // }
         }
       }
       break;
-    // case GameState.GameOver:
-    //   reset();
-    //   game.state = GameState.Playing;
-    //   break;
+    case GameState.GameOver:
+      reset();
+      game.state = GameState.Playing;
+      break;
   }
-  
 }
 
 class WalkingAnimation {
@@ -149,21 +147,21 @@ class WalkingAnimation {
 
   draw() {
 
-    // if (this.moving != 0)
-    //   this.u = this.currentFrame % this.animationLength;
-    // else
-    //   this.u = 0;
-
     this.u = (this.moving != 0) ? this.currentFrame % this.animationLength : this.u;
     push();
     translate(this.dx,this.dy);
     if (this.vertical)
-      rotate(90);
+      if(this.xDirection == 1)
+        rotate(180);
+      else
+        rotate(0);
+    else 
+      if(this.xDirection == 1)
+        rotate(90);
+      else 
+        rotate(270);
     scale(this.xDirection,1);
     
-
-    //rect(-26,-35,50,70);
-
     image(this.spritesheet,0,0,this.sw,this.sh,this.u*this.sw+this.offsetX,this.v*this.sh+this.offsetY,this.sw,this.sh);
     pop();
     let proportionalFramerate = round(frameRate() / this.framerate);
@@ -179,8 +177,6 @@ class WalkingAnimation {
       this.dx += this.moving*this.speed;
       this.move(this.dx,this.sw / 4,width - this.sw / 4);
     }
-
-    
   }
 
   move(position,lowerBounds,upperBounds) {
@@ -203,21 +199,21 @@ class WalkingAnimation {
     this.v = 0;
   }
 
-  keyPressed(right, left) {
-    if (keyCode === right) {
+  // keyPressed(right, left) {
+  //   if (keyCode === right) {
       
-      this.currentFrame = 1;
-    } else if (keyCode === left) {
+  //     this.currentFrame = 1;
+  //   } else if (keyCode === left) {
 
-      this.currentFrame = 1;
-    }
-  }
+  //     this.currentFrame = 1;
+  //   }
+  // }
 
-  keyReleased(right,left) {
-    if (keyCode === right || keyCode === left) {
-      this.moving = 0;
-    }
-  }
+  // keyReleased(right,left) {
+  //   if (keyCode === right || keyCode === left) {
+  //     this.moving = 0;
+  //   }
+  // }
 
   contains(x,y) {
     //rect(-26,-35,50,70);
@@ -228,7 +224,6 @@ class WalkingAnimation {
 
   stop() {
     this.moving = 0;
-    this.u = 7;
-    this.v = 8;
+    this.u = 3;
   }
 }
